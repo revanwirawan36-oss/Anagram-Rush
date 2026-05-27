@@ -2,7 +2,7 @@
 import curses
 import os
 
-# Nama file text tempat menyimpan data akun secara permanen
+#nama file untuk menyimpan data akun (username, password, level)
 FILE_AKUN = "user.txt"
 
 def inisialisasi_database_file():
@@ -11,7 +11,7 @@ def inisialisasi_database_file():
     
     if not os.path.exists(FILE_AKUN):
         with open(FILE_AKUN, "w", encoding="utf-8") as file:
-            # Akun bawaan otomatis diset mulai dari level 1
+            #akun default
             file.write("admin:alpro123:1\n")
             file.write("kelompok:anagram:1\n")
             
@@ -20,7 +20,7 @@ def inisialisasi_database_file():
             baris_bersih = baris.strip()
             if baris_bersih and baris_bersih.count(":") == 2:
                 username, password, level = baris_bersih.split(":")
-                # Simpan password dan level dalam bentuk dictionary di dalam dictionary
+                #simpan password dan level pada dict
                 kredensial[username] = {
                     "password": password,
                     "level": int(level)
@@ -53,15 +53,15 @@ def custom_input(stdscr, y, x, max_len, mask=False):
         _, current_x = stdscr.getyx()
         ch = stdscr.getch()
         
-        if ch in (10, 13): # Enter
+        if ch in (10, 13): #enter
             break
-        elif ch in (8, 127, curses.KEY_BACKSPACE): # Backspace
+        elif ch in (8, 127, curses.KEY_BACKSPACE): #backspace
             if len(input_str) > 0:
                 input_str = input_str[:-1]
                 stdscr.move(y, current_x - 1)
                 stdscr.addch(' ')
                 stdscr.move(y, current_x - 1)
-        elif 32 <= ch <= 126: # Karakter Valid
+        elif 32 <= ch <= 126: #karakter yang bisa dicetak
             if len(input_str) < max_len:
                 char = chr(ch)
                 input_str += char
@@ -99,7 +99,7 @@ def tampilan_login(stdscr):
         username = custom_input(stdscr, start_y + 3, start_x + 20, 32, mask=False)
         password = custom_input(stdscr, start_y + 7, start_x + 20, 32, mask=True)
         
-        # REVISI VALIDASI: Mengecek struktur dict yang baru
+        #mengecek kredensial login dengan database file txt
         if username in db_akun and db_akun[username]["password"] == password:
             curses.curs_set(0)
             stdscr.clear()
@@ -108,7 +108,7 @@ def tampilan_login(stdscr):
             stdscr.refresh()
             stdscr.getch()
             
-            # REVISI PENTING: Kembalikan tuple (True, username, level_user)
+            #return tuple
             return True, username, db_akun[username]["level"]
         else:
             stdscr.addstr(start_y + 10, start_x + (w // 2) - 18, "Username/Password Salah! (Enter)", curses.A_BOLD)
@@ -122,7 +122,7 @@ def update_level_user(username_target, level_baru):
     if username_target in db_akun:
         db_akun[username_target]["level"] = level_baru
         
-        # Tulis ulang seluruh isi file user.txt dengan data level yang baru
+        #tulis ulang seluruh database ke file untuk menyimpan perubahan level
         with open(FILE_AKUN, "w", encoding="utf-8") as file:
             for user, data in db_akun.items():
                 file.write(f"{user}:{data['password']}:{data['level']}\n")
@@ -159,13 +159,13 @@ def tampilan_signup(stdscr):
             stdscr.getch()
             continue
             
-        # Cek duplikasi di database file txt
+        #ngecek apakah username sudah ada di database file txt
         if new_user in db_akun:
             stdscr.addstr(start_y + 10, start_x + (w // 2) - 16, "Username sudah terdaftar! (Enter)", curses.A_BOLD)
             stdscr.refresh()
             stdscr.getch()
         else:
-            # Simpan permanen ke user.txt menggunakan mode APPEND ('a')
+            #simpan akun baru ke file txt dengan level awal 1
             tambah_akun_ke_file(new_user, new_pass)
             
             curses.curs_set(0)
@@ -181,7 +181,7 @@ def gerbang_awal(stdscr):
     curses.curs_set(0)
     stdscr.keypad(True)
     
-    # Pastikan file user.txt dikonfigurasi saat pertama kali program berjalan
+    #pastikan file database akun sudah ada dan bisa diakses sebelum menampilkan menu utama
     inisialisasi_database_file()
     
     h, w = 12, 50
