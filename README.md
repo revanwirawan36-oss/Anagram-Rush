@@ -96,12 +96,16 @@ def bubble_sort(arr):
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
     return arr
 
-## 6. Kredit
+---
+
+## 👥 6. Kredit Kelompok
+
 Proyek Tugas Akhir mata kuliah Algoritma Pemrograman ini dikembangkan oleh:
+
 | Nama Anggota | NPM |
-| :---: | :---: |
-| Muhammad Revan Wirawan | 2517051010 |
-| Talitha Reva Nabila | 2517051020 |
-| Adinda Alifia Az Zahra | 2517051027 |
-| Afifah Raidathu Nasya | 2517051043 |
-| Isma Eru Salsabila | 2517051018 |
+| :--- | :---: |
+| **Muhammad Revan Wirawan** | 2517051010 |
+| **Isma Eru Salsabila** | 2517051018 |
+| **Talitha Reva Nabila** | 2517051020 |
+| **Adinda Alifia Az Zahra** | 2517051027 |
+| **Afifah Raidhatu Nasya** | 2517051043 |
