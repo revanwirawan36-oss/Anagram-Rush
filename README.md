@@ -103,7 +103,7 @@ def bubble_sort(arr):
 Proyek Tugas Akhir mata kuliah Algoritma Pemrograman ini dikembangkan oleh:
 
 | Nama Anggota | NPM |
-| :--- | :---: |
+| :---: | :--- |
 | **Muhammad Revan Wirawan** | 2517051010 |
 | **Isma Eru Salsabila** | 2517051018 |
 | **Talitha Reva Nabila** | 2517051020 |
