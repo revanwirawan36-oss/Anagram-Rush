@@ -25,6 +25,7 @@ def tampilkan_menu_akhir(stdscr, status, username):
 
     pilihan_aktif = 0
 
+    # --- LOOPING UTAMA MENU (RENDER & INPUT) ---
     while True:
         stdscr.clear()
         sh, sw = stdscr.getmaxyx()
