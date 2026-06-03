@@ -6,7 +6,7 @@ import os
 FILE_AKUN = "user.txt"
 
 def inisialisasi_database_file():
-    """Membaca username, password, dan level user dari file"""
+    """Membaca username, password, dan level user dari dalam file"""
     kredensial = {}
     
     if not os.path.exists(FILE_AKUN):
@@ -29,7 +29,7 @@ def inisialisasi_database_file():
     return kredensial
 
 def tambah_akun_ke_file(username, password):
-    """Menulis akun baru ke file, otomatis mulai dari level 1"""
+    """Menulis akun baru ke dalam file, otomatis mulai dari level 1"""
     with open(FILE_AKUN, "a", encoding="utf-8") as file:
         file.write(f"{username}:{password}:1\n")
 
@@ -93,7 +93,7 @@ def tampilan_login(stdscr):
         stdscr.addstr(start_y + 7, start_x + 5, "Password : ")
         draw_box(stdscr, start_y + 6, start_x + 18, 3, 36)
         
-        stdscr.addstr(start_y + 11, start_x + (w // 2) - 21, "[ Tekan ENTER setelah mengisi tiap kolom ]")
+        stdscr.addstr(start_y + 11, start_x + (w // 2) - 21, "[ Tekan ENTER setelah mengisi pada tiap kolom ]")
         stdscr.refresh()
         
         username = custom_input(stdscr, start_y + 3, start_x + 20, 32, mask=False)
@@ -116,7 +116,7 @@ def tampilan_login(stdscr):
             stdscr.getch()
             
 def update_level_user(username_target, level_baru):
-    """Fungsi untuk memperbarui level user di file user.txt saat berhasil naik level"""
+    """Fungsi untuk memperbarui level user di file user.txt saat berhasil untuk naik level"""
     db_akun = inisialisasi_database_file()
     
     if username_target in db_akun:
@@ -159,7 +159,7 @@ def tampilan_signup(stdscr):
             stdscr.getch()
             continue
             
-        #ngecek apakah username sudah ada di database file txt
+        #mengecek apakah username sudah ada di database file txt
         if new_user in db_akun:
             stdscr.addstr(start_y + 10, start_x + (w // 2) - 16, "Username sudah terdaftar! (Enter)", curses.A_BOLD)
             stdscr.refresh()
@@ -171,7 +171,7 @@ def tampilan_signup(stdscr):
             curses.curs_set(0)
             stdscr.clear()
             draw_box(stdscr, (screen_y - 5) // 2, (screen_x - w) // 2, 5, w, "STATUS")
-            stdscr.addstr((screen_y - 5) // 2 + 2, (screen_x - w) // 2 + (w // 2) - 17, "Registrasi Berhasil! Silakan Login.")
+            stdscr.addstr((screen_y - 5) // 2 + 2, (screen_x - w) // 2 + (w // 2) - 17, "Registrasi Berhasil Dilakukan! Silakan Login.")
             stdscr.refresh()
             stdscr.getch()
             break
