@@ -39,7 +39,7 @@ CONFIG_LEVEL = {
     },
     9: {
         "timer": 50,
-        "kata_dasar": ["kasur", "peras", "keras", "rakus", "seram"]
+        "kata_dasar": ["kasur", "peras", "keras", "suaka", "seram"]
     },
     10: {
         "timer": 45, # Level Terakhir: Tantangan Kata 6 Huruf yang Familiar
