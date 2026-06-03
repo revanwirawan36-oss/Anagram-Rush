@@ -24,7 +24,7 @@ CONFIG_LEVEL = {
         "timer": 60,
         "kata_dasar": ["getar", "selat", "pakar", "laris", "keras"]
     },
-    # ── LEVEL 6-10: HARD MODE (WAJIB MINIMAL 2 ANAGRAM YANG SANGAT MUDAH & COMMON) ──
+    #LEVEL 6-10: HARD MODE (input 2 anagram dan waktu semakin berkurang per levelnya)
     6: {
         "timer": 60,
         "kata_dasar": ["rakus", "seram", "pasar", "rawat", "sepat"]

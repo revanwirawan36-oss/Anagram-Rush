@@ -5,7 +5,7 @@ def load_kata_dari_file():
     daftar_kata = []
     nama_file = "kata_indonesia.txt"
     
-    #cek aoakah filenya ada di folder yang sama
+    #cek apakah filenya ada di folder yang sama
     if os.path.exists(nama_file):
         with open(nama_file, "r", encoding="utf-8") as file:
             for baris in file:

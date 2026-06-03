@@ -7,7 +7,7 @@ from config import CONFIG_LEVEL
 from menang_kalah import tampilkan_menu_akhir
 
 
-
+#untuk mengurutkan array karakter secara manual menggunakan bubble sort
 def bubble_sort(arr):
     n = len(arr)
     for i in range(n - 1):
@@ -16,6 +16,7 @@ def bubble_sort(arr):
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
     return arr
 
+#untuk mengecek anagram
 def cek_anagram_sorting(kata1, kata2):
     k1 = kata1.lower()
     k2 = kata2.lower()

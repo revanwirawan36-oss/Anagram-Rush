@@ -61,7 +61,7 @@ def tulis_tengah_kotak(stdscr, y, x, box_width, box_height, text, attr=0):
     except curses.error:
         pass
 
-#anagram rea time
+#anagram real-time
 def render_pemeriksaan_box(stdscr, y, x, box_h, box_w, kata_dasar, kata_user):
     """
     Menampilkan proses pengecekan anagram secara real-time di dalam kotak pemeriksaan.
@@ -71,7 +71,7 @@ def render_pemeriksaan_box(stdscr, y, x, box_h, box_w, kata_dasar, kata_user):
     draw_box(stdscr, y, x, box_h, box_w)
     inner_w = max(1, box_w - 4)
 
-    #seblm input
+    #sebelum input
     if not kata_user:
         try:
             stdscr.addstr(y + 1, x + 2, f"[{kata_dasar}]"[:inner_w],  curses.A_DIM)
