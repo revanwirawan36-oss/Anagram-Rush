@@ -43,6 +43,6 @@ CONFIG_LEVEL = {
     },
     10: {
         "timer": 45, # Level Terakhir: Tantangan Kata 6 Huruf yang Familiar
-        "kata_dasar": ["barang", "sarang", "datang", "pasang", "karang"]
+        "kata_dasar": ["garang", "sarang", "kosong", "kreasi", "karang"]
     }
 }
