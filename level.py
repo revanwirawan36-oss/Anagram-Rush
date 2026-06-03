@@ -14,7 +14,8 @@ def menu_pilih_level(stdscr, username, max_level_user):
     """Sistem Pilih Level Grid Matriks 2x5 untuk Total 10 Level"""
     curses.curs_set(0)
     stdscr.keypad(True)
-    
+
+    # --- KONFIGURASI UKURAN GRID & KOTAK LEVEL ---
     TOTAL_LEVEL = 10
     KOLOM_GRID = 5  #buat grid 2 baris x 5 kolom
     pilihan_aktif = 0  #indeks level yg disorot
