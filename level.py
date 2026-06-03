@@ -59,7 +59,8 @@ def menu_pilih_level(stdscr, username, max_level_user):
             else:
                 teks_level = f"  [LOCKED]  "
             
-            #render kotak kecil level
+            # --- RENDER KOTAK LEVEL & HIGHLIGHT SELEKSI ---
+            # Jika kotak ini adalah indeks yang sedang aktif dipilih oleh user
             if idx == pilihan_aktif:
                 stdscr.addstr(box_y,     box_x, "┌" + "─" * (w_kotak-2) + "┐", curses.A_REVERSE | curses.A_BOLD)
                 stdscr.addstr(box_y + 1, box_x, f"│{teks_level}│", curses.A_REVERSE | curses.A_BOLD)
