@@ -15,6 +15,7 @@ def tampilkan_menu_akhir(stdscr, status, username):
         judul = "=== LEVEL CLEAR! ==="
         pesan = f"Luar biasa {username}! Semua kata terpecahkan."
         opsi = ["Kembali ke Menu Level", "Quit Game"]
+        # Mapping index pilihan ke nilai return yang akan dikirim balik ke game utama
         mapping_hasil = {0: True, 1: "quit"}
     else:
         judul = "=== TIME UP! LEVEL GAGAL ==="
