@@ -7,337 +7,217 @@ from menang_kalah import tampilkan_menu_akhir
 
 
 def bubble_sort(arr):
-    """Mengurutkan array karakter secara manual dengan algoritma Bubble Sort"""
+    """Mengurutkan array/list karakter secara manual dengan algoritma Bubble Sort"""
     n = len(arr)
+    # Loop luar untuk mengontrol jumlah iterasi penjelajahan array
     for i in range(n - 1):
+        # Loop dalam untuk membandingkan elemen yang bersebelahan
         for j in range(n - i - 1):
+            # Jika elemen kiri lebih besar dari elemen kanan, tukar posisinya (Ascending)
             if arr[j] > arr[j + 1]:
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
     return arr
 
 
 def cek_anagram_sorting(kata1, kata2):
-    """Mengecek anagram menggunakan metode manual Bubble Sort"""
+    """Mengecek apakah dua kata merupakan anagram menggunakan metode manual Bubble Sort"""
     k1 = kata1.lower()
     k2 = kata2.lower()
     
+    # Jika panjang kedua kata berbeda, sudah pasti bukan anagram
     if len(k1) != len(k2):
         return False
 
+    # Mengubah string menjadi list karakter lalu diurutkan dengan fungsi bubble_sort di atas
     sorted1 = bubble_sort(list(k1))
     sorted2 = bubble_sort(list(k2))
 
+    # Membandingkan isi list karakter yang sudah terurut satu per satu
     anagram = True
     for i in range(len(sorted1)):
         if sorted1[i] != sorted2[i]:
-            anagram = False
+            anagram = False # Jika ada satu huruf saja yang tidak cocok
             break
             
     return anagram
 
-#gambar kotak dengan border menggunakan karakter boxdrawing Unicode
+
 def draw_box(stdscr, y, x, height, width, attr=0):
-    """Menggambar kotak bertepi menggunakan karakter box-drawing Unicode"""
+    """Menggambar kotak bertepi visual menggunakan karakter box-drawing Unicode"""
     try:
+        # Menggambar garis sudut dan horizontal atas
         stdscr.addstr(y, x, "┌" + "─" * (width - 2) + "┐", attr)
+        # Menggambar garis vertikal kiri dan kanan
         for i in range(1, height - 1):
-            stdscr.addstr(y + i, x,             "│", attr)
+            stdscr.addstr(y + i, x, "│", attr)
             stdscr.addstr(y + i, x + width - 1, "│", attr)
+        # Menggambar garis sudut dan horizontal bawah
         stdscr.addstr(y + height - 1, x, "└" + "─" * (width - 2) + "┘", attr)
     except curses.error:
         pass
 
 
-def tulis_tengah_kotak(stdscr, y, x, box_width, box_height, text, attr=0):
-    """Menulis teks tepat di tengah-tengah kotak baik secara horizontal maupun vertikal"""
-    inner_w = box_width - 2
-    inner_h = box_height - 2
-
-    pad_x = max(0, (inner_w - len(text)) // 2)
-    pad_y = max(0, inner_h // 2)
-
-    try:
-        stdscr.addstr(y + 1 + pad_y, x + 1 + pad_x, text[:inner_w], attr)
-    except curses.error:
-        pass
-
-#anagram real-time
-def render_pemeriksaan_box(stdscr, y, x, box_h, box_w, kata_dasar, kata_user):
-    """
-    Menampilkan proses pengecekan anagram secara real-time di dalam kotak pemeriksaan.
-    Menggunakan metode Bubble Sort untuk visualisasi terurut per huruf.
-    Sekarang validasi status 'valid' juga mengecek keberadaan kata di database kata_pilihan.
-    """
-    draw_box(stdscr, y, x, box_h, box_w)
-    inner_w = max(1, box_w - 4)
-
-    #sebelum input
-    if not kata_user:
-        try:
-            stdscr.addstr(y + 1, x + 2, f"[{kata_dasar}]"[:inner_w],  curses.A_DIM)
-            stdscr.addstr(y + 2, x + 2, "menunggu input..."[:inner_w], curses.A_DIM)
-        except curses.error:
-            pass
-        return
-
-    k1 = kata_dasar.lower()
-    k2 = kata_user.lower()
+def menu_gameplay(stdscr, username, level):
+    """Fungsi utama pengatur jalannya permainan, tampilan, dan hitung mundur waktu"""
+    cfg = CONFIG_LEVEL[level] # Mengambil konfigurasi kata dan timer berdasarkan level yang dipilih
+    list_kata_dasar = cfg["kata_dasar"] # List kata dasar yang harus ditebak anagramnya
     
-    #visual pk buuble sort
-    sort1 = bubble_sort(list(k1))
-    sort2 = bubble_sort(list(k2))
-
-    #biar kaya yang di modul
-    def fmt(s):
-        return "['" + "','".join(s) + "']"
-
-    #penentuan hasil akhir menggunakan fungsi berbasis Bubble Sort
-    is_anagram = cek_anagram_sorting(k1, k2)
+    # Membuat dictionary untuk menyimpan jawaban user (kosong/None di awal)
+    jawaban_user = {kata: None for kata in list_kata_dasar}
     
-    #VALIDASI JUGA MENGECEK DATABASE (kata_pilihan) DAN BUKAN KATA DASAR ITU SENDIRI
-    is_valid   = is_anagram and (k2 in kata_pilihan) and (k1 != k2)
+    # List penampung pesan log notifikasi di bagian bawah layar game
+    notifikasi_log = []
 
-    lines = [
-        (f"memeriksa {kata_dasar} vs {kata_user}", curses.A_DIM),
-        (f"terurut 1={fmt(sort1)}",                curses.A_DIM),
-        (f"terurut 2={fmt(sort2)}",                curses.A_DIM),
-        ("ANAGRAM"      if is_anagram else "TDK ANAGRAM",
-        curses.A_BOLD  if is_anagram else curses.A_DIM),
-        (f"{kata_user} valid" if is_valid else (f"{kata_user} TDK VALID" if is_anagram else ""), curses.A_BOLD),
-    ]
+    def tambah_notifikasi(pesan):
+        """Memasukkan pesan baru ke log notifikasi dan membatasi maksimal 3 baris tampilan"""
+        notifikasi_log.append(pesan)
+        if len(notifikasi_log) > 3:
+            notifikasi_log.pop(0) # Menghapus pesan paling lama jika sudah lebih dari 3 baris
 
-    for i, (line, attr) in enumerate(lines):
-        row = y + 1 + i
-        if row >= y + box_h - 1 or not line:
-            continue
-        try:
-            stdscr.addstr(row, x + 2, line[:inner_w], attr)
-        except curses.error:
-            pass
-
-
-#gameplay utama untuk level 1-5
-def main_gameplay(stdscr, username, level):
-    if level not in CONFIG_LEVEL:
-        return False
-
-    cfg         = CONFIG_LEVEL[level]
-    timer_awal  = cfg["timer"]
-    daftar_kata = [k.lower() for k in cfg["kata_dasar"]]
-
-    jawaban_user = {kata: None for kata in daftar_kata}
-
-    log_notifikasi = [
-        "Waktu berjalan secara real-time...",
-        "Masukkan 1 anagram valid untuk setiap kata dasar.",
-        "Selamat datang di Anagram Rush!",
-    ]
-    #buat tambah notif
-    def tambah_notifikasi(teks):
-        log_notifikasi.insert(0, teks)
-        if len(log_notifikasi) > 10:
-            log_notifikasi.pop()
-
-    stdscr.nodelay(True)
+    # Mengaktifkan pembacaan tombol keyboard kustom dan menyembunyikan kursor
     stdscr.keypad(True)
     curses.curs_set(0)
+    # AKTIFKAN NON-BLOCKING INPUT: getch() tidak akan berhenti menunggu ketikan, melainkan terus berjalan demi timer
+    stdscr.nodelay(True)
 
-    waktu_mulai  = time.time()
-    input_buffer = ""
+    timer_awal = cfg["timer"] # Menyimpan durasi waktu maksimal level
+    waktu_mulai = time.time()  # Mencatat waktu presisi saat level dimulai
+    input_buffer = ""          # Tempat menampung teks tebakan yang sedang diketik user
 
     while True:
-        waktu_tersisa = int(timer_awal - (time.time() - waktu_mulai))
-
-        #klo gagal
-        if waktu_tersisa <= 0:
-            return tampilkan_menu_akhir(stdscr, False, username)
-
-        #klo menang
-        if all(jawaban_user[k] is not None for k in daftar_kata):
-            return tampilkan_menu_akhir(stdscr, True, username)
-
-        """
-        ════════════════════════════════════════
-         R E N D E R   U I   ( F U L L S C R E E N )
-        ════════════════════════════════════════
-        """
-
         stdscr.clear()
-        sh, sw = stdscr.getmaxyx()
+        sh, sw = stdscr.getmaxyx() # Mendapatkan ukuran dinamis jendela terminal saat ini
 
-        #1. PENGATURAN SKALA DINAMIS UTAMA
-        MARGIN_X    = 4
-        HEADER_H    = 3
+        # Menghitung sisa waktu pengerjaan
+        waktu_berjalan = time.time() - waktu_mulai
+        sisa_waktu = int(timer_awal - waktu_berjalan)
 
-        available_h = sh - HEADER_H - 4
-        BOX_H       = max(3, int(available_h * 0.15)) 
-        BOX_GAP_X   = 3
-        N           = len(daftar_kata)
+        # KONDISI KALAH: Jika waktu habis (sisa waktu <= 0)
+        if sisa_waktu <= 0:
+            stdscr.nodelay(False) # Matikan mode non-blocking sebelum pindah menu
+            return tampilkan_menu_akhir(stdscr, False, username) # Panggil menu kalah
 
-        available_w  = sw - (2 * MARGIN_X)
-        BOX_W        = max(12, (available_w - (N - 1) * BOX_GAP_X) // N)
-        total_grid_w = N * BOX_W + (N - 1) * BOX_GAP_X
-        grid_x       = (sw - total_grid_w) // 2
+        # KONDISI MENANG: Memeriksa apakah semua kata dasar sudah berhasil dijawab oleh user
+        if all(jawaban_user[kata] is not None for kata in list_kata_dasar):
+            stdscr.nodelay(False)
+            return tampilkan_menu_akhir(stdscr, True, username) # Panggil menu menang
 
-        #header dengan judul level dan timer
-        title     = f"ANAGRAM RUSH - LEVEL {level}"
-        mnt       = max(0, waktu_tersisa) // 60
-        dtk       = max(0, waktu_tersisa) % 60
-        timer_str = f"TIME: {mnt:02d}:{dtk:02d}"
+        # --- TAHAP RENDERING TAMPILAN GRAFIS TERMINAL ---
+        
+        # 1. Judul Atas
+        judul = f" ANAGRAM RUSH - LEVEL {level} "
+        stdscr.addstr(2, (sw - len(judul)) // 2, judul, curses.A_BOLD | curses.A_REVERSE)
+        
+        info_user = f"Pemain: {username}"
+        stdscr.addstr(3, (sw - len(info_user)) // 2, info_user, curses.A_DIM)
 
-        try:
-            stdscr.addstr(1, grid_x, title, curses.A_BOLD | curses.A_UNDERLINE)
-            stdscr.addstr(1, grid_x + total_grid_w - len(timer_str), timer_str, curses.A_BOLD | curses.A_REVERSE)
-        except curses.error:
-            pass
+        # 2. Gambar Box Wadah Utama Pengingat Soal Game
+        box_h, box_w = 11, 70
+        box_y, box_x = 5, (sw - box_w) // 2
+        draw_box(stdscr, box_y, box_x, box_h, box_w)
 
-        #box 1: Kotak Kata Dasar (Static, Tidak Berubah)
-        ROW1_Y = HEADER_H + 1
-        for i, kata in enumerate(daftar_kata):
-            bx = grid_x + i * (BOX_W + BOX_GAP_X)
-            draw_box(stdscr, ROW1_Y, bx, BOX_H, BOX_W)
-            tulis_tengah_kotak(stdscr, ROW1_Y, bx, BOX_W, BOX_H, kata.upper(), curses.A_BOLD)
+        # 3. Bar Informasi Sisa Waktu (Timer)
+        teks_timer = f" Sisa Waktu: {sisa_waktu} detik "
+        # Efek visual: teks berkedip dan tebal jika waktu kritis di bawah 15 detik
+        attr_timer = curses.A_BOLD | curses.A_BLINK if sisa_waktu <= 15 else curses.A_BOLD
+        stdscr.addstr(5, box_x + 4, teks_timer, attr_timer)
 
-        # box 2: Kotak Jawaban User (Dinamis, Terisi Berdasarkan Input User)
-        ROW2_Y = ROW1_Y + BOX_H + 1
-        for i, kata in enumerate(daftar_kata):
-            bx      = grid_x + i * (BOX_W + BOX_GAP_X)
-            jawaban = jawaban_user[kata]
-            if jawaban is not None:
-                draw_box(stdscr, ROW2_Y, bx, BOX_H, BOX_W, curses.A_BOLD)
-                tulis_tengah_kotak(stdscr, ROW2_Y, bx, BOX_W, BOX_H, jawaban.upper(), curses.A_BOLD | curses.A_REVERSE)
+        # 4. Loop untuk Menampilkan Baris Soal Kata Dasar dan Hasil Slot Jawaban User
+        for idx, kata in enumerate(list_kata_dasar):
+            pos_y = box_y + 2 + idx
+            slot_jawaban = jawaban_user[kata]
+            
+            if slot_jawaban is None:
+                # Jika belum dijawab, tampilkan strip kosong [ _ _ _ _ ] sejumlah panjang kata dasar
+                tampilan_slot = "[ " + " ".join(["_"] * len(kata)) + " ]"
+                stdscr.addstr(pos_y, box_x + 6, f"{idx+1}. Kata Dasar: {kata.upper():<10} -> {tampilan_slot}")
             else:
-                draw_box(stdscr, ROW2_Y, bx, BOX_H, BOX_W, curses.A_DIM)
-                tulis_tengah_kotak(stdscr, ROW2_Y, bx, BOX_W, BOX_H, "◦ ◦ ◦ ◦", curses.A_DIM)
+                # Jika sudah berhasil dijawab, tampilkan kata jawaban dengan efek tebal warna standar
+                stdscr.addstr(pos_y, box_x + 6, f"{idx+1}. Kata Dasar: {kata.upper():<10} -> [ {slot_jawaban.upper()} ]", curses.A_BOLD)
 
-        #box 3: Kotak Pemeriksaan Anagram Real-Time (Dinamis, Menampilkan Proses Validasi Anagram)
-        PEMERIKSA_Y = ROW2_Y + BOX_H + 1
-        PEMERIKSA_H = 7 
+        # 5. Gambar Box Input Form Tempat Mengetik
+        input_box_y = box_y + box_h + 1
+        draw_box(stdscr, input_box_y, box_x, 3, box_w)
+        stdscr.addstr(input_box_y + 1, box_x + 4, f"Ketik Tebakan Anagram: {input_buffer}")
 
-        for i, kata in enumerate(daftar_kata):
-            bx = grid_x + i * (BOX_W + BOX_GAP_X)
-            render_pemeriksaan_box(
-                stdscr, PEMERIKSA_Y, bx, PEMERIKSA_H, BOX_W,
-                kata, input_buffer
-            )
-
-        #box 4: Kotak Input User + Log Notifikasi (Dinamis, Terisi Berdasarkan Interaksi User dan Status Validasi)
-        BOTTOM_Y = PEMERIKSA_Y + PEMERIKSA_H + 2
-        BOTTOM_H = max(5, sh - BOTTOM_Y - 2)
-
-        INPUT_BOX_W = max(25, int(total_grid_w * 0.40))
-
-        #kotak input
-        draw_box(stdscr, BOTTOM_Y, grid_x, BOTTOM_H, INPUT_BOX_W)
-        try:
-            stdscr.addstr(BOTTOM_Y + 1, grid_x + 3, "KOLOM INPUT:", curses.A_DIM | curses.A_UNDERLINE)
-
-            input_y   = BOTTOM_Y + (BOTTOM_H // 2)
-            label     = ">> "
-            isi_input = label + input_buffer
-            stdscr.addstr(input_y, grid_x + 4, isi_input, curses.A_BOLD)
-
-            cursor_col = grid_x + 4 + len(isi_input)
-            if cursor_col < grid_x + INPUT_BOX_W - 2:
-                curses.curs_set(1)
-                stdscr.move(input_y, cursor_col)
-        except curses.error:
-            pass
-
-        #kotak log aktivitas
-        KETER_X = grid_x + INPUT_BOX_W + 2
-        KETER_W = (grid_x + total_grid_w) - KETER_X
-        INNER_W = max(1, KETER_W - 6)
-
-        draw_box(stdscr, BOTTOM_Y, KETER_X, BOTTOM_H, KETER_W)
-        try:
-            stdscr.addstr(BOTTOM_Y + 1, KETER_X + 3, "LOG AKTIVITAS:", curses.A_DIM | curses.A_UNDERLINE)
-        except curses.error:
-            pass
-
-        wrapped_lines = []
-        for notif in log_notifikasi:
-            baris_wrap = textwrap.wrap(notif, width=INNER_W) or [notif[:INNER_W]]
-            wrapped_lines.extend(baris_wrap)
-
-        for idx, line in enumerate(wrapped_lines):
-            row = BOTTOM_Y + 2 + idx
-            if row < BOTTOM_Y + BOTTOM_H - 1:
-                try:
-                    attr_log = curses.A_BOLD if idx == 0 else curses.A_DIM
-                    stdscr.addstr(row, KETER_X + 3, "• " + line, attr_log)
-                except curses.error:
-                    pass
+        # 6. Menampilkan Log Baris Notifikasi Pesan Sistem di Bagian Bawah
+        notif_y = input_box_y + 4
+        for idx, log in enumerate(notifikasi_log):
+            if notif_y + idx < sh - 1:
+                stdscr.addstr(notif_y + idx, box_x, f"» {log}", curses.A_DIM)
 
         stdscr.refresh()
-        """
-        ════════════════════════════════════════
-        I N P U T   P O L L I N G
-        ════════════════════════════════════════
-        """
-        time.sleep(0.05)
-        ch = stdscr.getch()
+        time.sleep(0.05) # Delay mikro untuk mencegah penggunaan daya CPU 100% akibat loop non-blocking
+
+        # --- PROSES MEMBACA INPUT KEYBOARD SECARA REAL-TIME ---
+        try:
+            ch = stdscr.getch()
+        except Exception:
+            ch = -1
 
         if ch == -1:
-            continue
+            continue # Jika tidak ada tombol yang ditekan, lewati proses di bawah dan ulangi loop
 
-        elif ch in (10, 13):   # ── ENTER ──
+        # JIKA USER MENEKAN TOMBOL ENTER (Proses Validasi Dimulai)
+        if ch in (10, 13):
             kata_tebakan = input_buffer.strip().lower()
-            input_buffer = ""
+            input_buffer = "" # Kosongkan kembali wadah mengetik setelah enter ditekan
 
             if not kata_tebakan:
                 continue
 
-            #1. cari kata dasar yang cocok secara struktural (Menggunakan Bubble Sort manual)
             cocok = None
-            for kd in daftar_kata:
-                if cek_anagram_sorting(kd, kata_tebakan):
-                    cocok = kd
+            # Mencari kata dasar mana di level ini yang memiliki kecocokan struktur anagram dengan kata tebakan
+            for kata_dasar in list_kata_dasar:
+                if cek_anagram_sorting(kata_dasar, kata_tebakan):
+                    cocok = kata_dasar
                     break
 
-            #case 1: Tidak ada struktur anagram yang cocok dengan kata dasar manapun
-            if cocok is None:
-                tambah_notifikasi(f"Kata '{kata_tebakan.upper()}' bukan anagram dari kata mana pun!")
-                continue
-
+            # TAHAP VALIDASI BERLAPIS (5 Kasus Gagal & 1 Kasus Sukses):
             
-            #case 2: Struktur anagram cocok, tapi kata tebakan tidak valid (tidak ada di database kata_pilihan)
-            if kata_tebakan not in kata_pilihan:
-                tambah_notifikasi(f"Kata '{kata_tebakan.upper()}' merupakan anagram dari '{cocok.upper()}', tetapi tidak valid/tidak ada di KBBI!")
+            # Kasus 1: Struktur huruf tidak membentuk anagram dengan kata dasar manapun di level ini
+            if cocok is None:
+                tambah_notifikasi(f"Gagal! Kombinasi huruf '{kata_tebakan.upper()}' salah / bukan anagram soal.")
                 continue
 
-            #case 3: Struktur anagram cocok, valid di database, tapi sama persis dengan kata dasar
+            # Kasus 2: Kata tebakan merupakan anagram secara struktur, namun tidak terdaftar resmi di KBBI (file database)
+            if kata_tebakan not in kata_pilihan:
+                tambah_notifikasi(f"Gagal! Struktur anagram cocok, tapi '{kata_tebakan.upper()}' tidak ada di KBBI!")
+                continue
+
+            # Kasus 3: Kata tebakan sama persis dengan kata dasar (Tidak boleh curang memakai kata yang sama)
             if kata_tebakan == cocok:
                 tambah_notifikasi(f"Gagal! '{kata_tebakan.upper()}' sama persis dengan kata dasar.")
                 continue
 
-            #case 4: Struktur anagram cocok, valid di database, tapi sudah terisi di kolom yang sama
+            # Kasus 4: Jawaban anagram tersebut sudah pernah diisi sebelumnya oleh user di kolom tersebut
             if jawaban_user[cocok] == kata_tebakan:
                 tambah_notifikasi(f"Sudah diisi! '{kata_tebakan.upper()}' sudah ada di kolom tersebut.")
                 continue
 
-            #case 5: Struktur anagram cocok, valid di database, tapi sudah terisi dengan anagram lain di kolom yang sama
+            # Kasus 5: Kolom kata dasar tersebut sudah sukses terisi oleh kata anagram sah yang lain
             if jawaban_user[cocok] is not None:
                 tambah_notifikasi(f"Kolom '{cocok.upper()}' sudah terisi dengan anagram lain!")
                 continue
 
-            #sukses validasi semua, update jawaban user di kolom yang sesuai
+            # KONDISI SUKSES: Lolos semua validasi di atas, simpan jawaban dan reset timer durasi level
             jawaban_user[cocok] = kata_tebakan
             tambah_notifikasi(f"BERHASIL! '{kata_tebakan.upper()}' sah untuk anagram '{cocok.upper()}'!")
-            waktu_mulai = time.time()
+            waktu_mulai = time.time() # Reset pencatatan waktu (Pemain diberi bonus waktu penuh lagi setiap tebakan benar)
             timer_awal  = cfg["timer"]
 
-        elif ch in (curses.KEY_BACKSPACE, 127, 8):   #backspace
-            input_buffer = input_buffer[:-1]
+        elif ch in (curses.KEY_BACKSPACE, 127, 8):   # Jika menekan backspace
+            input_buffer = input_buffer[:-1]          # Hapus 1 karakter terakhir string
 
-        elif ch in (ord('q'), ord('Q')):              # q untuk quit
+        elif ch in (ord('q'), ord('Q')):              # Jika menekan tombol 'q' untuk menyerah/keluar
             stdscr.nodelay(False)
-            return None
+            return None                               # Keluar dari level dan kembali ke menu awal
 
-        elif 32 <= ch <= 126:                         #karakter valid 
-            if len(input_buffer) < 20:
+        elif 32 <= ch <= 126:                         # Membaca karakter huruf standar yang valid
+            if len(input_buffer) < 20:                # Batas maksimal pengetikan tebakan adalah 20 huruf
                 input_buffer += chr(ch)
 
 
 def jalankan_gameplay_level(username, level):
-    return curses.wrapper(main_gameplay, username, level)
+    """Fungsi pembungkus (wrapper) aman untuk memanggil menu_gameplay di dalam lingkungan library curses"""
+    return curses.wrapper(menu_gameplay, username, level)
